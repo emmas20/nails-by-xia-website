@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Book Your Appointment — nailsby.xia</title>
+  <title>Book Now — nailsby.xia</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400;1,500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet" />
@@ -1272,7 +1272,7 @@
       <li><a href="index.html#pricing">Pricing</a></li>
       <li><a href="index.html#discounts">Discounts</a></li>
       <li><a href="index.html#faq">FAQ</a></li>
-      <li><a href="booking.html" class="nav-book">Book Your Appointment</a></li>
+      <li><a href="booking.html" class="nav-book">Book Now</a></li>
     </ul>
   </nav>
 
@@ -1291,7 +1291,7 @@
           <h3>Before booking</h3>
           <ul>
             <li>A $15 deposit is required after booking.</li>
-            <li>Remaining balance is paid in cash at your appointment.</li>
+            <li>Remaining balance is paid in cash.</li>
             <li>Base price is for a one-colour set.</li>
             <li>Nail art levels should be added before submitting.</li>
             <li>Your appointment is fully secured once the $15 deposit is sent.</li>
@@ -1374,10 +1374,11 @@
           <div class="form-two">
             <label>Preferred Date *
               <input type="date" name="preferred_date" required>
-            </label>
-            <label>Preferred Time *
-              <input type="time" name="preferred_time" required>
-            </label>
+<label>Available Time *
+  <select id="availableTime" name="preferred_time" required>
+    <option value="">Select a date and service first</option>
+  </select>
+</label>
           </div>
 
           <div class="form-divider"></div>
@@ -1448,44 +1449,107 @@
     const service = params.get('service');
     if (service && serviceData[service]) setSelected(service);
     updateTotal();
+const availabilityUrl = 'https://esargsyan.app.n8n.cloud/webhook/nails-by-xia-available-times';
 
-    document.getElementById('bookingRequestForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
+async function loadAvailableTimes() {
+  const date = document.querySelector('input[name="preferred_date"]').value;
+  const baseLength = document.getElementById('baseLength').value;
+  const timeSelect = document.getElementById('availableTime');
 
-      const form = e.target;
-      const submitBtn = form.querySelector('button[type="submit"]');
-      submitBtn.textContent = 'Submitting...';
+  timeSelect.innerHTML = '<option value="">Loading times...</option>';
 
-      const webhookUrl = 'PASTE_N8N_WEBHOOK_URL_HERE';
-      const formData = new FormData(form);
-      formData.append('estimated_total', document.getElementById('estimatedTotal').textContent);
-      formData.append('deposit_required', '$15 e-transfer deposit required to secure appointment');
+  if (!date || !baseLength) {
+    timeSelect.innerHTML = '<option value="">Select a date and service first</option>';
+    return;
+  }
 
-      if (webhookUrl.includes('PASTE_N8N_WEBHOOK_URL_HERE')) {
-        alert('Test mode: add your n8n webhook URL in booking.html to make this submit to Google Sheets and send emails.');
-        submitBtn.textContent = 'Book Appointment ✦';
-        return;
-      }
-
-      try {
-        const response = await fetch(webhookUrl, { method: 'POST', body: formData });
-        if (!response.ok) throw new Error('Submission failed');
-
-        form.innerHTML = `
-          <div class="success-card">
-            <h2>Appointment booked 💕</h2>
-            <p>Thank you for booking with Nails by Xia. Your booking details have been submitted successfully.</p>
-          </div>
-        `;
-      } catch (error) {
-        alert('Something went wrong. Please try again or message Xia directly.');
-        submitBtn.textContent = 'Book Appointment ✦';
-      }
+  try {
+    const response = await fetch(availabilityUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        preferred_date: date,
+        base_length: baseLength
+      })
     });
 
-    window.addEventListener('scroll', () => {
-      document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 40);
+    const data = await response.json();
+
+    timeSelect.innerHTML = '';
+
+    if (!data.times || data.times.length === 0) {
+      timeSelect.innerHTML = '<option value="">No available times</option>';
+      return;
+    }
+
+    data.times.forEach(time => {
+      const option = document.createElement('option');
+      option.value = time.value;
+      option.textContent = time.label;
+      timeSelect.appendChild(option);
     });
+
+  } catch (error) {
+    console.error('Availability error:', error);
+    timeSelect.innerHTML = '<option value="">Error loading times</option>';
+  }
+}
+
+document.querySelector('input[name="preferred_date"]').addEventListener('change', loadAvailableTimes);
+document.getElementById('baseLength').addEventListener('change', loadAvailableTimes);
+
+document.getElementById('bookingBookingForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const form = e.target;
+  const submitBtn = form.querySelector('button[type="submit"]');
+
+  submitBtn.textContent = 'Submitting...';
+  submitBtn.disabled = true;
+
+  const webhookUrl = 'https://esargsyan.app.n8n.cloud/webhook/nails-by-xia-booking-full';
+
+  const formData = new FormData(form);
+
+  const payload = {
+    full_name: formData.get('full_name'),
+    email: formData.get('email'),
+    phone: formData.get('phone'),
+    selected_service: formData.get('selected_service'),
+    base_length: formData.get('base_length'),
+    nail_art_level: formData.get('nail_art_level'),
+    preferred_date: formData.get('preferred_date'),
+    preferred_time: formData.get('preferred_time'),
+    estimated_total: document.getElementById('estimatedTotal').textContent,
+    notes: formData.get('notes'),
+    deposit_required: '$15 e-transfer deposit required'
+  };
+
+  try {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) throw new Error('n8n error');
+
+    form.innerHTML = `
+      <div class="success-card">
+        <h2>Appointment booked 💕</h2>
+        <p>Thank you for booking with Nails by Xia. Your booking details have been submitted successfully.</p>
+      </div>
+    `;
+  } catch (error) {
+    console.error('Booking submit error:', error);
+    alert('Something went wrong. Please try again or message Xia directly.');
+    submitBtn.textContent = 'Book Appointment ✦';
+    submitBtn.disabled = false;
+  }
+});
+
   </script>
 </body>
 </html>
