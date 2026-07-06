@@ -1507,14 +1507,12 @@ document.getElementById('baseLength').addEventListener('change', loadAvailableTi
 async function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
-
     reader.onload = () => resolve({
       name: file.name,
       type: file.type,
       size: file.size,
       data_url: reader.result
     });
-
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
@@ -1533,27 +1531,29 @@ form.addEventListener('submit', async function (event) {
     .filter(file => file && file.size > 0)
     .slice(0, 3);
 
-  const tooLarge = inspoFiles.find(file => file.size > 4 * 1024 * 1024);
-
-  if (tooLarge) {
-    alert('One of the inspo photos is too large. Please upload photos under 4 MB each, or paste an inspo link instead.');
-    submitBtn.textContent = 'Book Appointment ✦';
-    submitBtn.disabled = false;
-    return;
-  }
-
   const inspoPhotos = await Promise.all(inspoFiles.map(fileToDataUrl));
 
-  const payload = new FormData(form);
-
-  payload.append('inspo_photos', JSON.stringify(inspoPhotos));
-  payload.append('estimated_total', document.getElementById('estimatedTotal').textContent);
-  payload.append('deposit_required', '$15 e-transfer deposit required');
+  const payload = {
+    full_name: formData.get('full_name'),
+    email: formData.get('email'),
+    phone: formData.get('phone'),
+    selected_service: formData.get('selected_service'),
+    base_length: formData.get('base_length'),
+    nail_art_level: formData.get('nail_art_level'),
+    preferred_date: formData.get('preferred_date'),
+    preferred_time: formData.get('preferred_time'),
+    estimated_total: document.getElementById('estimatedTotal').textContent,
+    notes: formData.get('notes'),
+    inspo_photo_link: formData.get('inspo_photo_link'),
+    inspo_photos: inspoPhotos,
+    deposit_required: '$15 e-transfer deposit required'
+  };
 
   try {
     const response = await fetch(webhookUrl, {
       method: 'POST',
-      body: payload
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
     });
 
     if (!response.ok) throw new Error('n8n error');
