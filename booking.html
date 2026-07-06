@@ -1501,38 +1501,40 @@ async function loadAvailableTimes() {
 document.querySelector('input[name="preferred_date"]').addEventListener('change', loadAvailableTimes);
 document.getElementById('baseLength').addEventListener('change', loadAvailableTimes);
 
+
+
+
 async function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
+
     reader.onload = () => resolve({
       name: file.name,
       type: file.type,
       size: file.size,
       data_url: reader.result
     });
+
     reader.onerror = reject;
     reader.readAsDataURL(file);
   });
 }
 
-document.getElementById('bookingBookingForm').addEventListener('submit', async function(e) {
-  e.preventDefault();
+form.addEventListener('submit', async function (event) {
+  event.preventDefault();
 
-  const form = e.target;
   const submitBtn = form.querySelector('button[type="submit"]');
-
   submitBtn.textContent = 'Submitting...';
   submitBtn.disabled = true;
 
-  const webhookUrl = 'https://esargsyan.app.n8n.cloud/webhook/nails-by-xia-booking-full';
-
   const formData = new FormData(form);
 
-  const inspoFiles = Array.from(formData.getAll('inspiration_photo'))
+  const inspoFiles = Array.from(formData.getAll('inspo_photos'))
     .filter(file => file && file.size > 0)
     .slice(0, 3);
 
   const tooLarge = inspoFiles.find(file => file.size > 4 * 1024 * 1024);
+
   if (tooLarge) {
     alert('One of the inspo photos is too large. Please upload photos under 4 MB each, or paste an inspo link instead.');
     submitBtn.textContent = 'Book Appointment ✦';
@@ -1542,33 +1544,33 @@ document.getElementById('bookingBookingForm').addEventListener('submit', async f
 
   const inspoPhotos = await Promise.all(inspoFiles.map(fileToDataUrl));
 
-   const payload = new FormData(form);
+  const payload = new FormData(form);
 
-payload.append('estimated_total', document.getElementById('estimatedTotal').textContent);
-payload.append('deposit_required', '$15 e-transfer deposit required');
+  payload.append('inspo_photos', JSON.stringify(inspoPhotos));
+  payload.append('estimated_total', document.getElementById('estimatedTotal').textContent);
+  payload.append('deposit_required', '$15 e-transfer deposit required');
 
-try {
-  const response = await fetch(webhookUrl, {
-    method: 'POST',
-    body: payload
-  });
+  try {
+    const response = await fetch(webhookUrl, {
+      method: 'POST',
+      body: payload
+    });
 
-  if (!response.ok) throw new Error('n8n error');
+    if (!response.ok) throw new Error('n8n error');
 
-  form.innerHTML = `
-    <div class="success-card">
-      <h2>Appointment booked 💕</h2>
-      <p>Thank you for booking with Nails by Xia. Your booking details have been submitted successfully.</p>
-    </div>
-  `;
-} catch (error) {
-  console.error('Booking submit error:', error);
-  alert('Something went wrong. Please try again or message Xia directly.');
-  submitBtn.textContent = 'Book Appointment ✦';
-  submitBtn.disabled = false;
-}
+    form.innerHTML = `
+      <div class="success-card">
+        <h2>Appointment booked 💕</h2>
+        <p>Thank you for booking with Nails by Xia. Your booking details have been submitted successfully.</p>
+      </div>
+    `;
+  } catch (error) {
+    console.error('Booking submit error:', error);
+    alert('Something went wrong. Please try again or message Xia directly.');
+    submitBtn.textContent = 'Book Appointment ✦';
+    submitBtn.disabled = false;
+  }
 });
-
   </script>
 </body>
 </html>
