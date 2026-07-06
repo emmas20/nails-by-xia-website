@@ -1373,7 +1373,9 @@
           <div class="form-section-title">Preferred Appointment</div>
           <div class="form-two">
             <label>Preferred Date *
-              <input type="date" name="preferred_date" required>
+  <input type="date" name="preferred_date" required>
+</label>
+
 <label>Available Time *
   <select id="availableTime" name="preferred_time" required>
     <option value="">Select a date and service first</option>
@@ -1383,13 +1385,10 @@
 
           <div class="form-divider"></div>
 
-          <label>Upload Nail Inspiration Photos
-            <input type="file" name="inspo_photos" accept="image/*" multiple>
-          </label>
+<label>Upload Nail Inspiration Photos
+  <input type="file" name="inspiration_photo" accept="image/*" multiple>
+</label>
 
-          <label>Or Add an Inspiration Photo Link
-            <input type="url" name="inspo_photo_link" placeholder="Paste a Pinterest, Instagram, or image link">
-          </label>
 
           <label>Additional Notes (Optional)
             <textarea name="notes" placeholder="Any additional details or bookings?"></textarea>
@@ -1529,7 +1528,7 @@ document.getElementById('bookingBookingForm').addEventListener('submit', async f
 
   const formData = new FormData(form);
 
-  const inspoFiles = Array.from(formData.getAll('inspo_photos'))
+  const inspoFiles = Array.from(formData.getAll('inspiration_photo'))
     .filter(file => file && file.size > 0)
     .slice(0, 3);
 
@@ -1543,45 +1542,31 @@ document.getElementById('bookingBookingForm').addEventListener('submit', async f
 
   const inspoPhotos = await Promise.all(inspoFiles.map(fileToDataUrl));
 
-  const payload = {
-    full_name: formData.get('full_name'),
-    email: formData.get('email'),
-    phone: formData.get('phone'),
-    selected_service: formData.get('selected_service'),
-    base_length: formData.get('base_length'),
-    nail_art_level: formData.get('nail_art_level'),
-    preferred_date: formData.get('preferred_date'),
-    preferred_time: formData.get('preferred_time'),
-    estimated_total: document.getElementById('estimatedTotal').textContent,
-    notes: formData.get('notes'),
-    inspo_photo_link: formData.get('inspo_photo_link'),
-    inspo_photos: inspoPhotos,
-    deposit_required: '$15 e-transfer deposit required'
-  };
+   const payload = new FormData(form);
 
-  try {
-    const response = await fetch(webhookUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(payload)
-    });
+payload.append('estimated_total', document.getElementById('estimatedTotal').textContent);
+payload.append('deposit_required', '$15 e-transfer deposit required');
 
-    if (!response.ok) throw new Error('n8n error');
+try {
+  const response = await fetch(webhookUrl, {
+    method: 'POST',
+    body: payload
+  });
 
-    form.innerHTML = `
-      <div class="success-card">
-        <h2>Appointment booked 💕</h2>
-        <p>Thank you for booking with Nails by Xia. Your booking details have been submitted successfully.</p>
-      </div>
-    `;
-  } catch (error) {
-    console.error('Booking submit error:', error);
-    alert('Something went wrong. Please try again or message Xia directly.');
-    submitBtn.textContent = 'Book Appointment ✦';
-    submitBtn.disabled = false;
-  }
+  if (!response.ok) throw new Error('n8n error');
+
+  form.innerHTML = `
+    <div class="success-card">
+      <h2>Appointment booked 💕</h2>
+      <p>Thank you for booking with Nails by Xia. Your booking details have been submitted successfully.</p>
+    </div>
+  `;
+} catch (error) {
+  console.error('Booking submit error:', error);
+  alert('Something went wrong. Please try again or message Xia directly.');
+  submitBtn.textContent = 'Book Appointment ✦';
+  submitBtn.disabled = false;
+}
 });
 
   </script>
