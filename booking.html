@@ -1386,7 +1386,7 @@
           <div class="form-divider"></div>
 
 <label>Upload Nail Inspiration Photos
-  <input type="file" name="inspiration_photo" accept="image/*" multiple>
+  <input type="file" name="inspo_photos" accept="image/*" multiple>
 </label>
 
 
@@ -1453,6 +1453,7 @@
     if (service && serviceData[service]) setSelected(service);
     updateTotal();
 const availabilityUrl = 'https://esargsyan.app.n8n.cloud/webhook/nails-by-xia-available-times';
+const webhookUrl = 'https://esargsyan.app.n8n.cloud/webhook/nails-by-xia-booking-full';
 
 async function loadAvailableTimes() {
   const date = document.querySelector('input[name="preferred_date"]').value;
