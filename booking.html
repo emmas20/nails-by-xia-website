@@ -1387,6 +1387,10 @@
             <input type="file" name="inspo_photos" accept="image/*" multiple>
           </label>
 
+          <label>Or Add an Inspiration Photo Link
+            <input type="url" name="inspo_photo_link" placeholder="Paste a Pinterest, Instagram, or image link">
+          </label>
+
           <label>Additional Notes (Optional)
             <textarea name="notes" placeholder="Any additional details or bookings?"></textarea>
           </label>
@@ -1498,6 +1502,20 @@ async function loadAvailableTimes() {
 document.querySelector('input[name="preferred_date"]').addEventListener('change', loadAvailableTimes);
 document.getElementById('baseLength').addEventListener('change', loadAvailableTimes);
 
+async function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve({
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      data_url: reader.result
+    });
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
 document.getElementById('bookingBookingForm').addEventListener('submit', async function(e) {
   e.preventDefault();
 
@@ -1511,6 +1529,20 @@ document.getElementById('bookingBookingForm').addEventListener('submit', async f
 
   const formData = new FormData(form);
 
+  const inspoFiles = Array.from(formData.getAll('inspo_photos'))
+    .filter(file => file && file.size > 0)
+    .slice(0, 3);
+
+  const tooLarge = inspoFiles.find(file => file.size > 4 * 1024 * 1024);
+  if (tooLarge) {
+    alert('One of the inspo photos is too large. Please upload photos under 4 MB each, or paste an inspo link instead.');
+    submitBtn.textContent = 'Book Appointment ✦';
+    submitBtn.disabled = false;
+    return;
+  }
+
+  const inspoPhotos = await Promise.all(inspoFiles.map(fileToDataUrl));
+
   const payload = {
     full_name: formData.get('full_name'),
     email: formData.get('email'),
@@ -1522,6 +1554,8 @@ document.getElementById('bookingBookingForm').addEventListener('submit', async f
     preferred_time: formData.get('preferred_time'),
     estimated_total: document.getElementById('estimatedTotal').textContent,
     notes: formData.get('notes'),
+    inspo_photo_link: formData.get('inspo_photo_link'),
+    inspo_photos: inspoPhotos,
     deposit_required: '$15 e-transfer deposit required'
   };
 
