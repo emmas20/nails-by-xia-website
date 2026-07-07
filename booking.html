@@ -1615,6 +1615,7 @@ function buildCurrentMonthCalendar() {
   const year = today.getFullYear();
   const monthIndex = today.getMonth();
   const monthNumber = monthIndex + 1;
+
   const daysInMonth = new Date(year, monthNumber, 0).getDate();
   const firstDay = new Date(year, monthIndex, 1).getDay();
 
@@ -1624,6 +1625,10 @@ function buildCurrentMonthCalendar() {
   });
 
   calendarGrid.innerHTML = '';
+  preferredDateInput.value = '';
+  selectedDateText.textContent = 'Choose a date from this month, then select an available time.';
+  availableTimeSelect.innerHTML = '<option value="">Choose a date first</option>';
+  availableTimeSelect.disabled = true;
 
   for (let i = 0; i < firstDay; i++) {
     const blank = document.createElement('div');
@@ -1660,6 +1665,7 @@ function buildCurrentMonthCalendar() {
 }
 
 buildCurrentMonthCalendar();
+
 async function loadAvailableTimes() {
   const date = preferredDateInput.value;
   const baseLength = document.getElementById('baseLength').value;
