@@ -1373,14 +1373,18 @@
           <div class="form-section-title">Preferred Appointment</div>
           <div class="form-two">
             <label>Preferred Date *
-  <input type="date" name="preferred_date" required>
-</label>
 
-<label>Available Time *
-  <select id="availableTime" name="preferred_time" required>
-    <option value="">Select a date and service first</option>
-  </select>
-</label>
+<label>Preferred Month *</label>
+<input type="month" id="bookingMonth" required>
+
+<input type="hidden" name="preferred_date" id="preferredDate">
+
+<div id="calendarGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:14px 0;"></div>
+
+<label>Available Time *</label>
+<select id="availableTime" name="preferred_time" required>
+  <option value="">Choose a date first</option>
+</select>
           </div>
 
           <div class="form-divider"></div>
@@ -1454,8 +1458,42 @@
     updateTotal();
 const availabilityUrl = 'https://esargsyan.app.n8n.cloud/webhook/nails-by-xia-available-times';
 const webhookUrl = 'https://esargsyan.app.n8n.cloud/webhook/nails-by-xia-booking-full';
+const monthInput = document.getElementById('bookingMonth');
+const calendarGrid = document.getElementById('calendarGrid');
+const preferredDateInput = document.getElementById('preferredDate');
+
+function buildCalendar() {
+  const monthValue = monthInput.value;
+  calendarGrid.innerHTML = '';
+
+  if (!monthValue) return;
+
+  const [year, month] = monthValue.split('-').map(Number);
+  const daysInMonth = new Date(year, month, 0).getDate();
+
+  for (let day = 1; day <= daysInMonth; day++) {
+    const dateValue = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = day;
+    button.style.padding = '10px';
+    button.style.border = '1px solid #f5c8da';
+    button.style.background = '#fff4f8';
+    button.style.cursor = 'pointer';
+
+    button.addEventListener('click', () => {
+      preferredDateInput.value = dateValue;
+      loadAvailableTimes();
+    });
+
+    calendarGrid.appendChild(button);
+  }
+}
+
+monthInput.addEventListener('change', buildCalendar);
 async function loadAvailableTimes() {
-  const date = document.querySelector('input[name="preferred_date"]').value;
+  const date = document.getElementById('preferredDate').value;
   const baseLength = document.getElementById('baseLength').value;
   const timeSelect = document.getElementById('availableTime');
 
@@ -1498,7 +1536,6 @@ async function loadAvailableTimes() {
   }
 }
 
-document.querySelector('input[name="preferred_date"]').addEventListener('change', loadAvailableTimes);
 document.getElementById('baseLength').addEventListener('change', loadAvailableTimes);
 
 
