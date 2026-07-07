@@ -1163,6 +1163,133 @@
       color: var(--body);
       line-height: 1.7;
     }
+
+
+    /* Premium one-month calendar picker */
+    .appointment-card {
+      border: 1px solid var(--rose-mid);
+      background: linear-gradient(180deg, var(--cream), var(--blush));
+      border-radius: 12px;
+      padding: 1.15rem;
+      display: grid;
+      gap: 1rem;
+      box-shadow: 0 10px 28px rgba(212,83,126,0.08);
+    }
+    .appointment-month-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--rose);
+    }
+    .appointment-month-label {
+      display: grid;
+      gap: 0.18rem;
+    }
+    .appointment-month-label span {
+      color: var(--pink);
+      font-size: 0.66rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .appointment-month-label strong {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.65rem;
+      font-weight: 400;
+      color: var(--dark);
+      line-height: 1;
+    }
+    .appointment-month-note {
+      color: var(--soft);
+      font-size: 0.76rem;
+      line-height: 1.55;
+      text-align: right;
+      max-width: 210px;
+    }
+    .calendar-weekdays,
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 0.45rem;
+    }
+    .calendar-weekdays span {
+      text-align: center;
+      color: var(--soft);
+      font-size: 0.64rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .calendar-day,
+    .calendar-blank {
+      min-height: 42px;
+      border-radius: 999px;
+    }
+    .calendar-day {
+      border: 1px solid var(--rose-mid);
+      background: rgba(255,255,255,0.82);
+      color: var(--dark);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 0.86rem;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+    .calendar-day:hover:not(:disabled) {
+      border-color: var(--pink);
+      background: var(--rose);
+      transform: translateY(-1px);
+    }
+    .calendar-day.selected {
+      background: var(--pink);
+      color: #fff;
+      border-color: var(--pink);
+      box-shadow: 0 8px 18px rgba(212,83,126,0.22);
+    }
+    .calendar-day:disabled {
+      opacity: 0.28;
+      cursor: not-allowed;
+      background: #fff;
+    }
+    .selected-date-text {
+      color: var(--body);
+      font-size: 0.82rem;
+      line-height: 1.6;
+      background: white;
+      border: 1px solid var(--rose);
+      border-radius: 8px;
+      padding: 0.75rem 0.9rem;
+    }
+    .appointment-time-row {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 0.45rem;
+    }
+    .file-upload-box {
+      border: 1px dashed var(--rose-deep);
+      background: var(--blush);
+      border-radius: 10px;
+      padding: 0.95rem;
+    }
+    .file-upload-box input {
+      background: white;
+    }
+    @media (max-width: 700px) {
+      .appointment-month-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+      .appointment-month-note {
+        text-align: left;
+        max-width: none;
+      }
+      .calendar-day,
+      .calendar-blank {
+        min-height: 38px;
+      }
+    }
+
     @media (max-width: 900px) {
       .booking-page {
         padding: 6.5rem 1.5rem 4rem;
@@ -1361,6 +1488,7 @@
 <div class="design-note">
   Design levels already include details like French tips, chrome, charms, rhinestones, 3D flowers, and other nail art where applicable.
 </div>
+          </div>
 
           <div class="estimate-card">
             <span>Estimated Total</span>
@@ -1369,27 +1497,34 @@
           </div>
 
           <div class="form-divider"></div>
-
           <div class="form-section-title">Preferred Appointment</div>
-          <div class="form-two">
-            <label>Preferred Date *
+          <div class="appointment-card">
+            <div class="appointment-month-header">
+              <div class="appointment-month-label">
+                <span>Booking Month</span>
+                <strong id="calendarMonthTitle">This Month</strong>
+              </div>
+              <p class="appointment-month-note">Only the current booking month is shown so clients cannot book too far ahead.</p>
+            </div>
 
-<label>Preferred Month *</label>
-<input type="month" id="bookingMonth" required>
+            <input type="hidden" name="preferred_date" id="preferredDate" required>
 
-<input type="hidden" name="preferred_date" id="preferredDate">
+            <div class="calendar-weekdays" aria-hidden="true">
+              <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+            </div>
+            <div id="calendarGrid" class="calendar-grid"></div>
+            <p id="selectedDateText" class="selected-date-text">Choose a date to see available times.</p>
 
-<div id="calendarGrid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:8px;margin:14px 0;"></div>
-
-<label>Available Time *</label>
-<select id="availableTime" name="preferred_time" required>
-  <option value="">Choose a date first</option>
-</select>
+            <label class="appointment-time-row">Available Time *
+              <select id="availableTime" name="preferred_time" required disabled>
+                <option value="">Choose a date first</option>
+              </select>
+            </label>
           </div>
 
           <div class="form-divider"></div>
 
-<label>Upload Nail Inspiration Photos
+<label class="file-upload-box">Upload Nail Inspiration Photos
   <input type="file" name="inspo_photos" accept="image/*" multiple>
 </label>
 
@@ -1412,11 +1547,11 @@
 
   <script>
     const serviceData = {
-      short: { name: 'Short Length', price: 40, detail: '2 hour @ CA$40.00' },
-      medium: { name: 'Medium Length', price: 50, detail: '2 @ CA$50.00' },
-      long: { name: 'Long Length', price: 60, detail: '2 @ CA$60.00' },
-      xlong: { name: 'XLong Length', price: 70, detail: '2 @ CA$70.00' },
-      xxlong: { name: 'XXLong Length', price: 80, detail: '2 @ CA$80.00' }
+      short: { name: 'Short Length', price: 40, detail: '2 hours @ CA$40.00' },
+      medium: { name: 'Medium Length', price: 50, detail: '2 hours @ CA$50.00' },
+      long: { name: 'Long Length', price: 60, detail: '2 hours @ CA$60.00' },
+      xlong: { name: 'XLong Length', price: 70, detail: '2 hours @ CA$70.00' },
+      xxlong: { name: 'XXLong Length', price: 80, detail: '2 hours @ CA$80.00' }
     };
 
     function setSelected(slug) {
@@ -1458,32 +1593,65 @@
     updateTotal();
 const availabilityUrl = 'https://esargsyan.app.n8n.cloud/webhook/nails-by-xia-available-times';
 const webhookUrl = 'https://esargsyan.app.n8n.cloud/webhook/nails-by-xia-booking-full';
-const monthInput = document.getElementById('bookingMonth');
+
 const calendarGrid = document.getElementById('calendarGrid');
 const preferredDateInput = document.getElementById('preferredDate');
+const selectedDateText = document.getElementById('selectedDateText');
+const calendarMonthTitle = document.getElementById('calendarMonthTitle');
+const availableTimeSelect = document.getElementById('availableTime');
 
-function buildCalendar() {
-  const monthValue = monthInput.value;
+function formatDateForDisplay(dateValue) {
+  const date = new Date(dateValue + 'T00:00:00');
+  return date.toLocaleDateString('en-CA', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric'
+  });
+}
+
+function buildCurrentMonthCalendar() {
+  const today = new Date();
+  const year = today.getFullYear();
+  const monthIndex = today.getMonth();
+  const monthNumber = monthIndex + 1;
+  const daysInMonth = new Date(year, monthNumber, 0).getDate();
+  const firstDay = new Date(year, monthIndex, 1).getDay();
+
+  calendarMonthTitle.textContent = today.toLocaleDateString('en-CA', {
+    month: 'long',
+    year: 'numeric'
+  });
+
   calendarGrid.innerHTML = '';
 
-  if (!monthValue) return;
-
-  const [year, month] = monthValue.split('-').map(Number);
-  const daysInMonth = new Date(year, month, 0).getDate();
+  for (let i = 0; i < firstDay; i++) {
+    const blank = document.createElement('div');
+    blank.className = 'calendar-blank';
+    calendarGrid.appendChild(blank);
+  }
 
   for (let day = 1; day <= daysInMonth; day++) {
-    const dateValue = `${year}-${String(month).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const dateValue = `${year}-${String(monthNumber).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const dateObj = new Date(year, monthIndex, day);
+    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
 
     const button = document.createElement('button');
     button.type = 'button';
+    button.className = 'calendar-day';
     button.textContent = day;
-    button.style.padding = '10px';
-    button.style.border = '1px solid #f5c8da';
-    button.style.background = '#fff4f8';
-    button.style.cursor = 'pointer';
+    button.setAttribute('aria-label', formatDateForDisplay(dateValue));
+
+    if (dateObj < todayStart) {
+      button.disabled = true;
+      button.title = 'Past date';
+    }
 
     button.addEventListener('click', () => {
+      document.querySelectorAll('.calendar-day').forEach(btn => btn.classList.remove('selected'));
+      button.classList.add('selected');
       preferredDateInput.value = dateValue;
+      selectedDateText.textContent = `Selected: ${formatDateForDisplay(dateValue)}`;
       loadAvailableTimes();
     });
 
@@ -1491,16 +1659,17 @@ function buildCalendar() {
   }
 }
 
-monthInput.addEventListener('change', buildCalendar);
+buildCurrentMonthCalendar();
 async function loadAvailableTimes() {
-  const date = document.getElementById('preferredDate').value;
+  const date = preferredDateInput.value;
   const baseLength = document.getElementById('baseLength').value;
-  const timeSelect = document.getElementById('availableTime');
+  const timeSelect = availableTimeSelect;
 
-  timeSelect.innerHTML = '<option value="">Loading times...</option>';
+  timeSelect.disabled = true;
+  timeSelect.innerHTML = '<option value="">Loading available times...</option>';
 
   if (!date || !baseLength) {
-    timeSelect.innerHTML = '<option value="">Select a date and service first</option>';
+    timeSelect.innerHTML = '<option value="">Select a service and date first</option>';
     return;
   }
 
@@ -1514,14 +1683,21 @@ async function loadAvailableTimes() {
       })
     });
 
-    const data = await response.json();
+    if (!response.ok) throw new Error('Availability request failed');
 
+    const data = await response.json();
     timeSelect.innerHTML = '';
 
     if (!data.times || data.times.length === 0) {
-      timeSelect.innerHTML = '<option value="">No available times</option>';
+      timeSelect.innerHTML = '<option value="">No available times for this date</option>';
+      timeSelect.disabled = true;
       return;
     }
+
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Choose an available time';
+    timeSelect.appendChild(placeholder);
 
     data.times.forEach(time => {
       const option = document.createElement('option');
@@ -1530,15 +1706,19 @@ async function loadAvailableTimes() {
       timeSelect.appendChild(option);
     });
 
+    timeSelect.disabled = false;
   } catch (error) {
     console.error('Availability error:', error);
     timeSelect.innerHTML = '<option value="">Error loading times</option>';
+    timeSelect.disabled = true;
   }
 }
 
-document.getElementById('baseLength').addEventListener('change', loadAvailableTimes);
-
-
+document.getElementById('baseLength').addEventListener('change', () => {
+  availableTimeSelect.innerHTML = '<option value="">Choose a date first</option>';
+  availableTimeSelect.disabled = true;
+  if (preferredDateInput.value) loadAvailableTimes();
+});
 
 async function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -1562,6 +1742,13 @@ form.addEventListener('submit', async function (event) {
   submitBtn.disabled = true;
 
   const formData = new FormData(form);
+
+  if (!formData.get('preferred_date') || !formData.get('preferred_time')) {
+    alert('Please choose an appointment date and available time before booking.');
+    submitBtn.textContent = 'Book Appointment ✦';
+    submitBtn.disabled = false;
+    return;
+  }
 
   const inspoFiles = Array.from(formData.getAll('inspo_photos'))
     .filter(file => file && file.size > 0)
