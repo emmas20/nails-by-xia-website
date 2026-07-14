@@ -1388,6 +1388,81 @@
       font-size: 0.82rem;
       line-height: 1.6;
     }
+    /* FINAL MULTI-MONTH DESKTOP LAYOUT */
+
+.booking-months-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.booking-month-section {
+  min-width: 0;
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid var(--rose-mid);
+  border-radius: 12px;
+  padding: 1rem;
+  box-shadow: 0 8px 22px rgba(90, 30, 55, 0.06);
+}
+
+.booking-month-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.65rem;
+  font-weight: 500;
+  color: var(--dark);
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.booking-month-section .calendar-weekdays,
+.booking-month-section .calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.booking-month-section .calendar-day,
+.booking-month-section .calendar-blank {
+  min-width: 0;
+}
+
+/* Large desktop: widen the form and show two months side by side */
+@media screen and (min-width: 1200px) {
+  .booking-page {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  .booking-page-wrap {
+    width: 100%;
+    max-width: 1480px;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 2.5rem;
+  }
+
+  .booking-form-page {
+    min-width: 0;
+  }
+
+  .appointment-card {
+    width: 100%;
+  }
+
+  .booking-months-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 1.25rem;
+    align-items: start;
+  }
+}
+
+/* Tablet and mobile: keep calendars stacked */
+@media screen and (max-width: 1199px) {
+  .booking-months-container {
+    grid-template-columns: 1fr !important;
+  }
+}
 </style>
 </head>
 <body>
