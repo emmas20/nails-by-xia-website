@@ -944,14 +944,6 @@
   padding: 1rem;
 }
 
-.booking-month-title {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 1.5rem;
-  font-weight: 400;
-  color: var(--dark);
-  text-align: center;
-  margin-bottom: 1rem;
-}
 
 .booking-month-section .calendar-weekdays,
 .booking-month-section .calendar-grid {
@@ -966,20 +958,24 @@
 /* Multiple open booking months */
 .booking-months-container {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 2rem;
   width: 100%;
+  align-items: start;
 }
-
 .booking-month-section {
   width: 100%;
   background: #ffffff;
   border: 1px solid var(--rose-mid);
-  border-radius: 10px;
-  padding: 1rem;
-  box-shadow: 0 8px 22px rgba(90, 30, 55, 0.06);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 8px 22px rgba(90,30,55,.06);
+  transition: transform .2s ease;
 }
 
+.booking-month-section:hover {
+  transform: translateY(-2px);
+}
 .booking-month-title {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.55rem;
@@ -988,6 +984,7 @@
   text-align: center;
   margin-bottom: 1rem;
 }
+
 
 .booking-month-section .calendar-weekdays,
 .booking-month-section .calendar-grid {
@@ -1015,12 +1012,7 @@
   min-height: 42px;
 }
 
-@media (min-width: 900px) {
-  .booking-months-container {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    align-items: start;
-  }
-}
+
 
 @media (max-width: 600px) {
   .booking-month-section {
