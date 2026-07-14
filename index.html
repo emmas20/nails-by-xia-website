@@ -932,6 +932,111 @@
       .gallery-item.tall { grid-row: span 1; }
       footer { flex-direction: column; text-align: center; padding: 1.5rem; }
     }
+    .booking-months-container {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.booking-month-section {
+  background: white;
+  border: 1px solid var(--rose-mid);
+  border-radius: 10px;
+  padding: 1rem;
+}
+
+.booking-month-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.5rem;
+  font-weight: 400;
+  color: var(--dark);
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.booking-month-section .calendar-weekdays,
+.booking-month-section .calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.booking-month-section .calendar-weekdays {
+  margin-bottom: 0.55rem;
+}
+/* Multiple open booking months */
+.booking-months-container {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.booking-month-section {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid var(--rose-mid);
+  border-radius: 10px;
+  padding: 1rem;
+  box-shadow: 0 8px 22px rgba(90, 30, 55, 0.06);
+}
+
+.booking-month-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.55rem;
+  font-weight: 400;
+  color: var(--dark);
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.booking-month-section .calendar-weekdays,
+.booking-month-section .calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.booking-month-section .calendar-weekdays {
+  margin-bottom: 0.55rem;
+}
+
+.booking-month-section .calendar-weekdays span {
+  text-align: center;
+  color: var(--soft);
+  font-size: 0.64rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.booking-month-section .calendar-day,
+.booking-month-section .calendar-blank {
+  min-width: 0;
+  min-height: 42px;
+}
+
+@media (min-width: 900px) {
+  .booking-months-container {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
+@media (max-width: 600px) {
+  .booking-month-section {
+    padding: 0.75rem;
+  }
+
+  .booking-month-section .calendar-weekdays,
+  .booking-month-section .calendar-grid {
+    gap: 0.3rem;
+  }
+
+  .booking-month-section .calendar-day,
+  .booking-month-section .calendar-blank {
+    min-height: 36px;
+  }
+}
   </style>
 </head>
 <body>

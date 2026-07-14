@@ -1509,10 +1509,7 @@
 
             <input type="hidden" name="preferred_date" id="preferredDate" required>
 
-            <div class="calendar-weekdays" aria-hidden="true">
-              <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
-            </div>
-            <div id="calendarGrid" class="calendar-grid"></div>
+            <div id="calendarGrid" class="booking-months-container"></div>
             <p id="selectedDateText" class="selected-date-text">Choose a date to see available times.</p>
 
             <label class="appointment-time-row">Available Time *
@@ -1592,6 +1589,8 @@
     if (service && serviceData[service]) setSelected(service);
     updateTotal();
 const availabilityUrl = 'https://esargsyan.app.n8n.cloud/webhook/nails-by-xia-available-times';
+const bookingSettingsUrl =
+  'https://esargsyan.app.n8n.cloud/webhook/nails-by-xia-booking-settings';
 const webhookUrl = 'https://esargsyan.app.n8n.cloud/webhook/nails-by-xia-booking-full';
 
 const calendarGrid = document.getElementById('calendarGrid');
@@ -1610,36 +1609,78 @@ function formatDateForDisplay(dateValue) {
   });
 }
 
-function buildCurrentMonthCalendar() {
-  const today = new Date();
-  const year = today.getFullYear();
-  const monthIndex = today.getMonth();
-  const monthNumber = monthIndex + 1;
+function getCalgaryToday() {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'America/Edmonton',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).formatToParts(new Date());
+
+  return {
+    year: Number(parts.find(part => part.type === 'year')?.value),
+    month: Number(parts.find(part => part.type === 'month')?.value),
+    day: Number(parts.find(part => part.type === 'day')?.value)
+  };
+}
+
+function createMonthCalendar(monthValue) {
+  const match = String(monthValue).match(/^(\d{4})-(\d{2})$/);
+
+  if (!match) return null;
+
+  const year = Number(match[1]);
+  const monthNumber = Number(match[2]);
+  const monthIndex = monthNumber - 1;
 
   const daysInMonth = new Date(year, monthNumber, 0).getDate();
   const firstDay = new Date(year, monthIndex, 1).getDay();
+  const calgaryToday = getCalgaryToday();
 
-  calendarMonthTitle.textContent = today.toLocaleDateString('en-CA', {
+  const monthSection = document.createElement('div');
+  monthSection.className = 'booking-month-section';
+
+  const monthTitle = document.createElement('h3');
+  monthTitle.className = 'booking-month-title';
+  monthTitle.textContent = new Date(year, monthIndex, 1).toLocaleDateString('en-CA', {
     month: 'long',
     year: 'numeric'
   });
 
-  calendarGrid.innerHTML = '';
-  preferredDateInput.value = '';
-  selectedDateText.textContent = 'Choose a date from this month, then select an available time.';
-  availableTimeSelect.innerHTML = '<option value="">Choose a date first</option>';
-  availableTimeSelect.disabled = true;
+  const weekdays = document.createElement('div');
+  weekdays.className = 'calendar-weekdays';
+  weekdays.innerHTML = `
+    <span>Sun</span>
+    <span>Mon</span>
+    <span>Tue</span>
+    <span>Wed</span>
+    <span>Thu</span>
+    <span>Fri</span>
+    <span>Sat</span>
+  `;
+
+  const grid = document.createElement('div');
+  grid.className = 'calendar-grid';
 
   for (let i = 0; i < firstDay; i++) {
     const blank = document.createElement('div');
     blank.className = 'calendar-blank';
-    calendarGrid.appendChild(blank);
+    grid.appendChild(blank);
   }
 
+  const todayComparable =
+    calgaryToday.year * 10000 +
+    calgaryToday.month * 100 +
+    calgaryToday.day;
+
   for (let day = 1; day <= daysInMonth; day++) {
-    const dateValue = `${year}-${String(monthNumber).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-    const dateObj = new Date(year, monthIndex, day);
-    const todayStart = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+    const dateValue =
+      `${year}-${String(monthNumber).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+    const dateComparable =
+      year * 10000 +
+      monthNumber * 100 +
+      day;
 
     const button = document.createElement('button');
     button.type = 'button';
@@ -1647,24 +1688,87 @@ function buildCurrentMonthCalendar() {
     button.textContent = day;
     button.setAttribute('aria-label', formatDateForDisplay(dateValue));
 
-    if (dateObj < todayStart) {
+    if (dateComparable < todayComparable) {
       button.disabled = true;
       button.title = 'Past date';
     }
 
     button.addEventListener('click', () => {
-      document.querySelectorAll('.calendar-day').forEach(btn => btn.classList.remove('selected'));
+      document.querySelectorAll('.calendar-day').forEach(btn => {
+        btn.classList.remove('selected');
+      });
+
       button.classList.add('selected');
       preferredDateInput.value = dateValue;
-      selectedDateText.textContent = `Selected: ${formatDateForDisplay(dateValue)}`;
+      selectedDateText.textContent =
+        `Selected: ${formatDateForDisplay(dateValue)}`;
+
       loadAvailableTimes();
     });
 
-    calendarGrid.appendChild(button);
+    grid.appendChild(button);
+  }
+
+  monthSection.appendChild(monthTitle);
+  monthSection.appendChild(weekdays);
+  monthSection.appendChild(grid);
+
+  return monthSection;
+}
+
+async function loadOpenBookingMonths() {
+  calendarGrid.innerHTML = '';
+  calendarMonthTitle.textContent = 'Loading booking months...';
+  selectedDateText.textContent = 'Choose a date to see available times.';
+
+  try {
+    const response = await fetch(bookingSettingsUrl, {
+      method: 'GET'
+    });
+
+    if (!response.ok) {
+      throw new Error(`Booking settings request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    const months = Array.isArray(data.months)
+      ? data.months
+      : Array.isArray(data.open_booking_months)
+        ? data.open_booking_months
+        : [];
+
+    if (months.length === 0) {
+      calendarMonthTitle.textContent = 'No months currently open';
+      calendarGrid.innerHTML = '';
+      selectedDateText.textContent =
+        'Online booking is not currently open. Please contact Xia directly.';
+      return;
+    }
+
+    calendarMonthTitle.textContent =
+      months.length === 1 ? 'Open Booking Month' : 'Open Booking Months';
+
+    calendarGrid.innerHTML = '';
+
+    months.forEach(monthValue => {
+      const monthCalendar = createMonthCalendar(monthValue);
+
+      if (monthCalendar) {
+        calendarGrid.appendChild(monthCalendar);
+      }
+    });
+  } catch (error) {
+    console.error('Booking settings error:', error);
+
+    calendarMonthTitle.textContent = 'Calendar unavailable';
+    calendarGrid.innerHTML = '';
+    selectedDateText.textContent =
+      'The booking calendar could not be loaded. Please refresh the page.';
   }
 }
 
-buildCurrentMonthCalendar();
+loadOpenBookingMonths();
 
 async function loadAvailableTimes() {
   const date = preferredDateInput.value;
