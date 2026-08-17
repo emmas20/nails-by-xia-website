@@ -1459,6 +1459,29 @@
     grid-template-columns: 1fr;
   }
 }
+.website-credit {
+  width: 100%;
+  text-align: center;
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.28);
+  letter-spacing: 0.04em;
+}
+
+.footer-credit-link {
+  color: #d4537e;
+  text-decoration: none;
+  font-weight: 400;
+  margin-left: 4px;
+  transition: color 0.2s;
+}
+
+.footer-credit-link:hover {
+  color: #f5c8da;
+  text-decoration: underline;
+}
 </style>
 </head>
 <body>
@@ -1976,5 +1999,34 @@ form.addEventListener('submit', async function (event) {
   }
 });
   </script>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-logo">nailsby<span>.xia</span></div>
+
+    <p class="footer-copy">
+      © 2026 nailsby.xia · YYC Applewood, Calgary AB
+    </p>
+
+    <ul class="footer-links">
+      <li><a href="index.html#gallery">Gallery</a></li>
+      <li><a href="index.html#pricing">Pricing</a></li>
+      <li><a href="index.html#discounts">Discounts</a></li>
+      <li><a href="booking.html">Book</a></li>
+    </ul>
+
+    <div class="website-credit">
+      <span>Website designed & developed by</span>
+      <a
+        href="https://www.clienflowsystemss.com/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="footer-credit-link"
+      >
+        ClientFlowSystems
+      </a>
+    </div>
+  </footer>
+
 </body>
 </html>
