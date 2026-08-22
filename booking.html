@@ -1252,6 +1252,20 @@
       cursor: not-allowed;
       background: #fff;
     }
+
+    .calendar-day.fully-booked {
+      opacity: 0.38;
+      color: var(--soft);
+      background: #f1edf0;
+      border-color: #e6dde2;
+      text-decoration: line-through;
+      cursor: not-allowed;
+    }
+
+    .calendar-day.available-day {
+      border-color: var(--rose-deep);
+      background: #fff9fb;
+    }
     .selected-date-text {
       color: var(--body);
       font-size: 0.82rem;
@@ -1718,7 +1732,7 @@ function getCalgaryToday() {
   };
 }
 
-function createMonthCalendar(monthValue) {
+function createMonthCalendar(monthValue, monthAvailability = {}) {
   const match = String(monthValue).match(/^(\d{4})-(\d{2})$/);
 
   if (!match) return null;
@@ -1785,6 +1799,24 @@ function createMonthCalendar(monthValue) {
     if (dateComparable < todayComparable) {
       button.disabled = true;
       button.title = 'Past date';
+    } else {
+      const dayInfo = monthAvailability[dateValue];
+      const hasAvailability =
+        dayInfo === true ||
+        (dayInfo && dayInfo.available === true);
+
+      if (!hasAvailability) {
+        button.disabled = true;
+        button.classList.add('fully-booked');
+        button.title = 'Fully booked or unavailable';
+        button.setAttribute(
+          'aria-label',
+          `${formatDateForDisplay(dateValue)} — fully booked or unavailable`
+        );
+      } else {
+        button.classList.add('available-day');
+        button.title = 'Appointments available';
+      }
     }
 
     button.addEventListener('click', () => {
@@ -1808,6 +1840,32 @@ function createMonthCalendar(monthValue) {
   monthSection.appendChild(grid);
 
   return monthSection;
+}
+
+async function loadMonthAvailability(monthValue) {
+  try {
+    const response = await fetch(availabilityUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        mode: 'month_summary',
+        month: monthValue
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error(`Month availability request failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    return data && data.dates && typeof data.dates === 'object'
+      ? data.dates
+      : {};
+  } catch (error) {
+    console.error(`Month availability error for ${monthValue}:`, error);
+    return null;
+  }
 }
 
 async function loadOpenBookingMonths() {
@@ -1845,8 +1903,36 @@ async function loadOpenBookingMonths() {
 
     calendarGrid.innerHTML = '';
 
-    months.forEach(monthValue => {
-      const monthCalendar = createMonthCalendar(monthValue);
+    const monthResults = await Promise.all(
+      months.map(async monthValue => ({
+        monthValue,
+        availability: await loadMonthAvailability(monthValue)
+      }))
+    );
+
+    monthResults.forEach(({ monthValue, availability }) => {
+      // Fail safe: if the summary request fails, keep future dates clickable
+      // instead of accidentally marking the whole month as booked.
+      let safeAvailability = availability;
+
+      if (safeAvailability === null) {
+        safeAvailability = {};
+        const match = String(monthValue).match(/^(\d{4})-(\d{2})$/);
+
+        if (match) {
+          const year = Number(match[1]);
+          const monthNumber = Number(match[2]);
+          const daysInMonth = new Date(year, monthNumber, 0).getDate();
+
+          for (let day = 1; day <= daysInMonth; day++) {
+            const dateValue =
+              `${year}-${String(monthNumber).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+            safeAvailability[dateValue] = true;
+          }
+        }
+      }
+
+      const monthCalendar = createMonthCalendar(monthValue, safeAvailability);
 
       if (monthCalendar) {
         calendarGrid.appendChild(monthCalendar);
