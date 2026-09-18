@@ -1895,11 +1895,13 @@ async function loadOpenBookingMonths() {
 
     const data = await response.json();
 
-    const months = Array.isArray(data.months)
-      ? data.months
-      : Array.isArray(data.open_booking_months)
-        ? data.open_booking_months
-        : [];
+    const rawMonths = Array.isArray(data.months)
+  ? data.months
+  : Array.isArray(data.open_booking_months)
+    ? data.open_booking_months
+    : [];
+
+const months = [...new Set(rawMonths)];
 
     if (months.length === 0) {
       calendarMonthTitle.textContent = 'No months currently open';
