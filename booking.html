@@ -1598,6 +1598,11 @@
 </div>
           </div>
 
+          <label class="deposit-check" style="margin-bottom: 1rem;">
+            <input type="checkbox" id="soakOff" name="soak_off">
+            Add Soak Off — +$15 and +30 minutes
+          </label>
+
           <div class="estimate-card">
             <span>Estimated Total</span>
             <strong id="estimatedTotal">$0</strong>
@@ -1652,11 +1657,11 @@
 
   <script>
     const serviceData = {
-      short: { name: 'Short Length', price: 40, detail: '2 hours @ CA$40.00' },
-      medium: { name: 'Medium Length', price: 50, detail: '2 hours @ CA$50.00' },
-      long: { name: 'Long Length', price: 60, detail: '2 hours @ CA$60.00' },
-      xlong: { name: 'XLong Length', price: 70, detail: '2 hours @ CA$70.00' },
-      xxlong: { name: 'XXLong Length', price: 80, detail: '2 hours @ CA$80.00' }
+      short: { name: 'Short Length', price: 40, detail: '3 hours @ CA$40.00' },
+      medium: { name: 'Medium Length', price: 50, detail: '3 hours @ CA$50.00' },
+      long: { name: 'Long Length', price: 60, detail: '3 hours @ CA$60.00' },
+      xlong: { name: 'XLong Length', price: 70, detail: '3 hours @ CA$70.00' },
+      xxlong: { name: 'XXLong Length', price: 80, detail: '3 hours @ CA$80.00' }
     };
 
     function setSelected(slug) {
@@ -1686,6 +1691,11 @@
 
       if (nailArtLevel && nailArtLevel.value) {
         total += Number(nailArtLevel.value.split('|')[1] || 0);
+      }
+
+      const soakOff = document.getElementById('soakOff');
+      if (soakOff && soakOff.checked) {
+        total += 15;
       }
 
       const totalEl = document.getElementById('estimatedTotal');
@@ -1849,7 +1859,8 @@ async function loadMonthAvailability(monthValue) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         mode: 'month_summary',
-        month: monthValue
+        month: monthValue,
+        soak_off: document.getElementById('soakOff')?.checked || false
       })
     });
 
@@ -1950,6 +1961,18 @@ async function loadOpenBookingMonths() {
 
 loadOpenBookingMonths();
 
+const soakOffCheckbox = document.getElementById('soakOff');
+if (soakOffCheckbox) {
+  soakOffCheckbox.addEventListener('change', async () => {
+    updateTotal();
+    preferredDateInput.value = '';
+    selectedDateText.textContent = 'Choose a date to see available times.';
+    availableTimeSelect.innerHTML = '<option value="">Choose a date first</option>';
+    availableTimeSelect.disabled = true;
+    await loadOpenBookingMonths();
+  });
+}
+
 async function loadAvailableTimes() {
   const date = preferredDateInput.value;
   const baseLength = document.getElementById('baseLength').value;
@@ -1969,7 +1992,8 @@ async function loadAvailableTimes() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         preferred_date: date,
-        base_length: baseLength
+        base_length: baseLength,
+        soak_off: document.getElementById('soakOff')?.checked || false
       })
     });
 
@@ -2053,6 +2077,7 @@ form.addEventListener('submit', async function (event) {
     selected_service: formData.get('selected_service'),
     base_length: formData.get('base_length'),
     nail_art_level: formData.get('nail_art_level'),
+    soak_off: document.getElementById('soakOff')?.checked || false,
     preferred_date: formData.get('preferred_date'),
     preferred_time: formData.get('preferred_time'),
     estimated_total: document.getElementById('estimatedTotal').textContent,
